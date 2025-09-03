@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, :root { height: 100%; }
+
+body {
+  @apply min-h-screen antialiased transition-colors
+         bg-slate-50 text-slate-900
+         dark:bg-slate-900 dark:text-slate-100;
+}
+
+a { @apply text-brand hover:underline; }
+
+.btn {
+  @apply inline-flex items-center justify-center rounded-md px-3 py-2 text-sm font-medium
+         transition-colors;
+}
+
+.btn-primary {
+  @apply bg-brand text-white hover:bg-brand-dark;
+}
+
+.btn-ghost {
+  @apply hover:bg-slate-100 dark:hover:bg-slate-800;
+}
+
+.input {
+  @apply w-full rounded-md px-3 py-2 text-sm transition-colors
+         border border-slate-300 bg-white text-slate-900
+         placeholder:text-slate-400
+         focus:outline-none focus:ring-2 focus:ring-slate-400/40
+         dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500
+         dark:focus:ring-slate-500/40;
+}
+
+.card {
+  @apply rounded-lg border shadow-sm transition-colors
+         bg-white border-slate-200
+         dark:bg-slate-800 dark:border-slate-700;
+}
+
+.badge {
+  @apply rounded px-2 py-0.5 text-xs transition-colors
+         bg-slate-100 text-slate-700
+         dark:bg-slate-700 dark:text-slate-200;
+}
+
+.select {
+  @apply inline-block w-auto rounded-md px-3 py-2 text-sm transition-colors
+         border border-slate-300 bg-white text-slate-900
+         focus:outline-none focus:ring-2 focus:ring-slate-400/40
+         dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-slate-500/40
+         appearance-none bg-no-repeat pr-8;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='none' stroke='%23667485' stroke-width='2' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/></svg>");
+  background-position: right 0.6rem center;
+  background-size: 1rem 1rem;
+}
+.select-fluid { @apply block w-full; }    
+
+.file-input {
+  @apply inline-block w-auto rounded-md border border-slate-300 bg-white text-slate-900
+         px-3 py-2 text-sm transition-colors
+         dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100;
+}
+.file-input-fluid { @apply block w-full; } 
+
