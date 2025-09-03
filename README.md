@@ -3,6 +3,7 @@
 SUPRSS est une application web moderne développée pour **lire, organiser et partager des flux RSS**.  
 Elle propose une alternative simple, collaborative et auto-hébergeable aux solutions comme *Feedly* ou *Inoreader*.  
 
+**Tester l’application en ligne : [https://suprss.fr/](https://suprss.fr/)**
 ---
 
 ##  Fonctionnalités principales
