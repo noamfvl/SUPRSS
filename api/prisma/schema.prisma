@@ -1,0 +1,188 @@
+// ---------- Prisma config ----------
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "windows", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- Utilisateurs & comptes ----------
+model User {
+  id                 Int                @id @default(autoincrement())
+  email              String             @unique
+  passwordHash       String?
+  name               String?
+  preferences Json     @default("{}")
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  // relations
+  accounts           Account[]
+  collectionsOwned   Collection[]       @relation("UserCollectionsOwned")
+  collectionsMember  CollectionMember[]
+  articleStatuses    ArticleStatus[]
+  comments           Comment[]
+  messages           Message[]
+}
+
+model Account {
+  id                 Int       @id @default(autoincrement())
+  provider           String
+  providerAccountId  String
+  accessToken        String?
+  refreshToken       String?
+  expiresAt          DateTime?
+  userId             Int
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+// ---------- Collections & membres ----------
+model Collection {
+  id          Int                 @id @default(autoincrement())
+  name        String
+  description String?
+  isShared    Boolean             @default(false)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  ownerId     Int
+  owner       User                @relation("UserCollectionsOwned", fields: [ownerId], references: [id])
+
+  // enfants
+  members     CollectionMember[]
+  feeds       Feed[]
+  messages    Message[]
+  invitations Invitation[]
+}
+
+model CollectionMember {
+  id           Int         @id @default(autoincrement())
+  role         MemberRole  @default(MEMBER)
+  userId       Int
+  collectionId Int
+
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  collection   Collection  @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, collectionId])
+}
+
+enum MemberRole {
+  OWNER
+  MEMBER
+  READER
+}
+
+// ---------- Feeds & articles ----------
+model Feed {
+  id             Int        @id @default(autoincrement())
+  title          String
+  url            String
+  description    String?
+  category       String?
+  updateFreq     String?    // ex: "hourly", "6h", "daily"
+  status         FeedStatus @default(ACTIVE)
+  etag           String?
+  lastModified   String?
+  lastFetchedAt  DateTime?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  // relation collection
+  collectionId   Int
+  collection     Collection  @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  // relation articles
+  articles       Article[]
+
+  // contraintes & index
+  @@unique([collectionId, url]) // pas 2x la même URL dans une collection
+  @@index([collectionId])
+  @@index([category])
+}
+
+enum FeedStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model Article {
+  id           Int       @id @default(autoincrement())
+  feedId       Int
+  feed         Feed      @relation(fields: [feedId], references: [id], onDelete: Cascade)
+
+  guid         String?
+  url          String
+  title        String
+  author       String?
+  publishedAt  DateTime?
+  summary      String?
+  contentText  String?
+  createdAt    DateTime  @default(now())
+
+  statuses     ArticleStatus[]
+  comments     Comment[]
+
+  @@unique([feedId, url])
+  @@unique([feedId, guid])
+  @@index([publishedAt])
+  @@index([feedId, publishedAt])
+}
+
+model ArticleStatus {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  articleId  Int
+  isRead     Boolean  @default(false)
+  isFavorite Boolean  @default(false)
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  article    Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, articleId])
+}
+
+model Comment {
+  id           Int       @id @default(autoincrement())
+  articleId    Int
+  userId       Int
+  content      String    @db.Text
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // relations
+  article      Article   @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([articleId, createdAt])
+  @@index([userId, createdAt])
+}
+
+model Message {
+  id           Int       @id @default(autoincrement())
+  collectionId Int
+  userId       Int
+  content      String    @db.Text
+  createdAt    DateTime  @default(now())
+
+  // relations
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([collectionId, createdAt])
+  @@index([userId, createdAt])
+}
+
+model Invitation {
+  id           Int         @id @default(autoincrement())
+  email        String      // email du destinataire
+  role         MemberRole
+  collectionId Int
+  collection   Collection  @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  createdAt    DateTime    @default(now())
+}
